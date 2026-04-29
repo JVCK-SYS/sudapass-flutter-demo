@@ -22,10 +22,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _checkSession() async {
     if (await _auth.isLoggedIn()) {
-      if (!mounted) return;
+      final user = await _auth.getUser();
+      if (!mounted || user == null) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const SuccessScreen()),
+        MaterialPageRoute(builder: (_) => SuccessScreen(user: user)),
       );
     }
   }
@@ -33,11 +34,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _login() async {
     setState(() { _loading = true; _error = null; });
     try {
-      await _auth.login();
+      final user = await _auth.login();
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const SuccessScreen()),
+        MaterialPageRoute(builder: (_) => SuccessScreen(user: user)),
       );
     } catch (e) {
       setState(() { _error = e.toString(); });

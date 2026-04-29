@@ -3,7 +3,8 @@ import '../auth_service.dart';
 import 'home_screen.dart';
 
 class SuccessScreen extends StatelessWidget {
-  const SuccessScreen({super.key});
+  final SudaPassUser user;
+  const SuccessScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -12,39 +13,83 @@ class SuccessScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0E1A),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 90, height: 90,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A6B4A).withOpacity(0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF4ADE80), width: 2),
-                ),
-                child: const Icon(Icons.check_circle_outline,
-                    color: Color(0xFF4ADE80), size: 52),
+              // Success badge
+              Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Color(0xFF4ADE80), size: 22),
+                  const SizedBox(width: 8),
+                  const Text('Authenticated via SudaPass',
+                      style: TextStyle(color: Color(0xFF4ADE80), fontSize: 14)),
+                ],
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Authenticated',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+
+              // Citizen info card
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF111827),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (user.name != null) ...[
+                      const Text('Full Name',
+                          style: TextStyle(color: Colors.white38, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Text(user.name!,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 20),
+                    ],
+                    _field('National Number', user.nationalNumber),
+                    _field('Email', user.email),
+                    _field('Gender', user.gender),
+                    _field('Date of Birth', user.birthdate),
+                    _field('Nationality', user.nationality),
+                    _field('Assurance Level', user.assuranceLevel),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'The citizen has been successfully verified by SudaPass.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white54, fontSize: 15),
+
+              const SizedBox(height: 16),
+
+              // Raw JSON — useful for developers
+              ExpansionTile(
+                title: const Text('Raw user data (JSON)',
+                    style: TextStyle(color: Colors.white54, fontSize: 13)),
+                iconColor: Colors.white38,
+                collapsedIconColor: Colors.white38,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0D1117),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _prettyJson(user.raw),
+                      style: const TextStyle(
+                          color: Color(0xFF4ADE80),
+                          fontSize: 11,
+                          fontFamily: 'monospace'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 48),
+
+              const SizedBox(height: 32),
+
               OutlinedButton.icon(
                 onPressed: () async {
                   await auth.logout();
@@ -68,5 +113,30 @@ class SuccessScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _field(String label, String? value) {
+    if (value == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: const TextStyle(color: Colors.white38, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(color: Colors.white, fontSize: 15)),
+        ],
+      ),
+    );
+  }
+
+  String _prettyJson(Map<String, dynamic> json) {
+    final buffer = StringBuffer();
+    json.forEach((key, value) {
+      buffer.writeln('$key: $value');
+    });
+    return buffer.toString();
   }
 }

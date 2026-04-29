@@ -261,13 +261,29 @@ Also set `android:launchMode="singleTask"` on the `<activity>` tag.
 final auth = AuthService();
 
 try {
-  final success = await auth.login();
-  if (success) {
-    // User authenticated — navigate to your main screen
-  }
+  final user = await auth.login();
+
+  // Citizen identity is now available:
+  print(user.name);           // "Ahmed Mohamed"
+  print(user.nationalNumber); // "123456789"
+  print(user.email);          // "ahmed@example.com"
+  print(user.gender);         // "M"
+  print(user.birthdate);      // "1990-01-01"
+  print(user.nationality);    // "Sudanese"
+  print(user.picture);        // URL or path to citizen photo
+  print(user.assuranceLevel); // "urn:sudapass:fido2"
+  print(user.raw);            // full JSON response as Map
+
+  // Navigate to your main screen and use the data however you need
 } catch (e) {
   print('Login failed: $e');
 }
+```
+
+Retrieve the user later without triggering a new login:
+
+```dart
+final user = await auth.getUser(); // returns SudaPassUser? or null if not logged in
 ```
 
 Check session on app start:
